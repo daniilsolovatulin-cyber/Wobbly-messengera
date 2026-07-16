@@ -80,18 +80,52 @@
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root">
+  <div id="boot-status" style="color:#B8B0C4;font-family:sans-serif;padding:20px;font-size:13px;line-height:1.5;">
+    Загрузка…
+  </div>
+</div>
+
+<script>
+  window.addEventListener("error", function (e) {
+    var el = document.getElementById("boot-status");
+    if (el) {
+      el.style.color = "#F2A0A0";
+      el.innerHTML = "<b>Ошибка загрузки:</b><br>" + (e.message || "неизвестная ошибка") +
+        "<br><br>Файл: " + (e.filename || "?") + " строка " + (e.lineno || "?");
+    }
+  });
+</script>
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<script type="text/babel" data-presets="react" src="app.js"></script>
+<script>
+  fetch("./app.js")
+    .then((r) => {
+      if (!r.ok) throw new Error("HTTP " + r.status + " при загрузке app.js");
+      return r.text();
+    })
+    .then((code) => {
+      var compiled = Babel.transform(code, { presets: ["react"] }).code;
+      var script = document.createElement("script");
+      script.textContent = compiled;
+      document.body.appendChild(script);
+    })
+    .catch((err) => {
+      var el = document.getElementById("boot-status");
+      if (el) {
+        el.style.color = "#F2A0A0";
+        el.innerHTML = "<b>Не удалось загрузить приложение:</b><br>" + err.message;
+      }
+    });
+</script>
 
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("sw.js").catch(() => {});
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
     });
   }
 </script>
