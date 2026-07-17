@@ -108,10 +108,28 @@
       return r.text();
     })
     .then((code) => {
-      var compiled = Babel.transform(code, { presets: ["react"] }).code;
-      var script = document.createElement("script");
-      script.textContent = compiled;
-      document.body.appendChild(script);
+      var compiled;
+      try {
+        compiled = Babel.transform(code, {
+          presets: ["react"],
+          sourceType: "script",
+          filename: "app.js",
+        }).code;
+      } catch (babelErr) {
+        throw new Error("Babel не смог обработать код: " + babelErr.message);
+      }
+      try {
+        var script = document.createElement("script");
+        script.textContent = compiled;
+        document.body.appendChild(script);
+      } catch (runErr) {
+        throw new Error(
+          runErr.message +
+            "<br><br><b>Начало скомпилированного кода:</b><br><pre style='white-space:pre-wrap;font-size:11px;opacity:0.7'>" +
+            compiled.slice(0, 400).replace(/</g, "&lt;") +
+            "</pre>"
+        );
+      }
     })
     .catch((err) => {
       var el = document.getElementById("boot-status");
