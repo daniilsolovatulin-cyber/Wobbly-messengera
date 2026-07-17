@@ -99,46 +99,11 @@
 
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-<script>
-  fetch("./app.js")
-    .then((r) => {
-      if (!r.ok) throw new Error("HTTP " + r.status + " при загрузке app.js");
-      return r.text();
-    })
-    .then((code) => {
-      var compiled;
-      try {
-        compiled = Babel.transform(code, {
-          presets: ["react"],
-          sourceType: "script",
-          filename: "app.js",
-        }).code;
-      } catch (babelErr) {
-        throw new Error("Babel не смог обработать код: " + babelErr.message);
-      }
-      try {
-        var script = document.createElement("script");
-        script.textContent = compiled;
-        document.body.appendChild(script);
-      } catch (runErr) {
-        throw new Error(
-          runErr.message +
-            "<br><br><b>Начало скомпилированного кода:</b><br><pre style='white-space:pre-wrap;font-size:11px;opacity:0.7'>" +
-            compiled.slice(0, 400).replace(/</g, "&lt;") +
-            "</pre>"
-        );
-      }
-    })
-    .catch((err) => {
-      var el = document.getElementById("boot-status");
-      if (el) {
-        el.style.color = "#F2A0A0";
-        el.innerHTML = "<b>Не удалось загрузить приложение:</b><br>" + err.message;
-      }
-    });
-</script>
+<script
+  src="./app.js"
+  onerror="document.getElementById('boot-status').innerHTML='<b>Не удалось загрузить app.js</b><br>Проверь, что файл лежит рядом с index.html в репозитории и называется точно app.js'"
+></script>
 
 <script>
   if ("serviceWorker" in navigator) {
